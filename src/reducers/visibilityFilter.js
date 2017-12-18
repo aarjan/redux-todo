@@ -9,4 +9,7 @@ const visibiltyFilter = (state='SHOW_ALL',action) => {
 
 export default visibiltyFilter
 
-// why 'SHOW_ALL' or, a part of the state is only passed to intial state ? 
+/*
+    Note that each of these reducers is managing its own part of the global state. 
+    The state parameter is different for every reducer, and corresponds to the part of the state it manages.
+ */

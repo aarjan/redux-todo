@@ -16,6 +16,7 @@ let AddTodo = ({dispatch}) => {
                     input.value = ''
                 }}
                 >
+                {/* Mutating the input with the value entered.  */}
                     <input  
                         ref = {node => {
                             input = node
