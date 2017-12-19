@@ -23,3 +23,6 @@ const FilterLink = connect(
 )(Link)
 
 export default FilterLink
+
+// In mapStateToProps and mapDispatchToProps, 
+// the ownProps means the props that were passed when this FilterLink component is called.

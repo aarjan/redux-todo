@@ -1,4 +1,4 @@
-import React from 'react'
+import React  from "react";
 import {connect} from 'react-redux'
 import {addTodo} from '../actions'
 
@@ -16,11 +16,9 @@ let AddTodo = ({dispatch}) => {
                     input.value = ''
                 }}
                 >
-                {/* Mutating the input with the value entered.  */}
+                {/* Setting the value of input in local variable 'input' */}
                     <input  
-                        ref = {node => {
-                            input = node
-                        }}
+                        ref = {node => {input = node}}
                     />
                     <button type="submit"> AddTodo </button>
                 </form>

@@ -4,11 +4,11 @@ import Todo from './Todo'
 
 const TodoList = ({todos,onTodoClick}) => (
     <ul>
-        {todos.map((todo,index) => (
+        {todos.map((todo,index) => {
             // assigning a clone of todo '{...todo}' using spread operator, instead of actual one
             // passing all the elements of 'todo' instead of passing it as a one todo Object
-            <Todo key={index} {...todo} onClick={()=> onTodoClick(index)}/> 
-        ))}    
+            return <Todo key={index} {...todo} onClick={()=> onTodoClick(index)}/> 
+        })}    
     </ul>
 )
 
