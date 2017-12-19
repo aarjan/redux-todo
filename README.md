@@ -2,10 +2,11 @@
 
 ## Action
 Actions are payloads of information that send data from your application to your store.
-They are only the source of information for your store.
+They are only the __source of information__ for your store.
 Action are plain JS object. 
 It must have a type property that indicates the type of action performed.
 ```
+    // Here 'text' is the payload that is added to the store.
     {
         type: 'ADD_TODO',
         text: 'Build my first React app'
@@ -118,7 +119,32 @@ Here is the UI components for the Todo App:
 
 ## Designing Container Components
 Container Components acts as bridge between Presentational components and Redux Store.
-It provides the necessary props including callbacks to Presentational Components to work.
+It provides the necessary props including callbacks (for dispatch actions) to Presentational Components to work.
+Technically, we could use _store.subscribe()_ to read a part of the Redux state tree and supply props to a presentational component it renders. 
+But, we also have Redux library's connect() function, which provides many useful optimizations to prevent unnecessary re-renders. 
 
+To use connect(), we need to define two functions:
+__mapStateToProps()__ and __mapDispatchToProps()__.
 
+_mapStateToProps()_ maps tells how to transfrom current Redux store into props you want to pass to the
+Presentational component you are wrapping.  
+If this argument is specified in the Connect function, the new component will subscribe to Redux store updates. This means that any time the store is updated, mapStateToProps will be called. The results of mapStateToProps must be a plain object, which will be merged into the component’s props. If you don't want to subscribe to store updates, pass null or undefined in place of mapStateToProps.
 
+_mapDispatchToProps()_
+If your mapDispatchToProps function is declared as taking two parameters, it will be called with dispatch as the first parameter and the props passed to the connected component as the second parameter, and will be re-invoked whenever the connected component receives new props. (The second parameter is normally referred to as ownProps by convention.)
+
+-   Inject just dispatch and don't listen to store
+```
+    export default connect()(TodoApp)
+```
+For more examples:
+https://github.com/reactjs/react-redux/blob/master/docs/api.md#examples
+
+## Implementing other components
+
+Sometimes, we don't need to separate a component into Presentational and Conatainer components.
+As such, both the UI and functionalities can be added to a single component.
+
+In the todo app, 
+AddTodo component has a _input_ and a _button_ UI component.
+On button click, it _dispatches an action that adds a Todo element in the store_.

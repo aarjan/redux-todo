@@ -28,6 +28,7 @@ let AddTodo = ({dispatch}) => {
     )
 }
 
+// Inject just dispatch and don't listen to store
 AddTodo = connect()(AddTodo)
 
 export default AddTodo
