@@ -1,150 +1,133 @@
-## Example implementation of Todo app using Redux in React
+A basic Todo app has a UI like
+1. An input box, with a button to add a new Todo
+2. A list of todos
+3. A set of filter options. On Selecting the filter, the todos list is interactively changed.
 
-## Action
-Actions are payloads of information that send data from your application to your store.
-They are only the __source of information__ for your store.
-Action are plain JS object. 
-It must have a type property that indicates the type of action performed.
-```
-    // Here 'text' is the payload that is added to the store.
-    {
-        type: 'ADD_TODO',
-        text: 'Build my first React app'
-    }
+So, here are the possible UI components:
+1. Add Todo - adds Todo
+2. Todo List    - Encapsulates a list of todo
+3. Todo     - A single Todo object
+4. Filter List  - Encapsulates a list of Filters
+5. Filter type  - A Filter Object
+6. App  - Encapsulates the whole UI components
 
-    function addTodo(text) {
-        return { type:'ADD_TODO', text }
-    }
-```
-
-
-## Reducer
-A state defination is defined under Reducer.
-A state is an object that contains the attributes of the core app.
-You define Reducers to make changes in the state of the app.
-A reducer has a signature of
-```
-    function todo_reducer(state,action) {
-        return state
-    }
-```
-It accepts a state (OR, a subset state), and an action.
-It returns a new state based on the type of action specified.
-The provided state is not mutated; but a cloned state with necessary modification is returned.
-The helper function __combineReducer__ helps to combine the results of mulitple reducers into a single state tree. It is also known as __reducer composition__.
-Hence, we can pass a partial state into a reducer function.
-So, that the reducer working on that part of state, only cares about its part; it is completely unknown of the other state elements.
-```
-    const todos = (state=[],action) => {
-        ...
-        return state
-    }
-
-    const visibiltyFilter = (state='SHOW_ALL',action) => {
-        ....
-        return state
-    }
-
-    todoApp = combineReducer(todos,visibilityFilter)
-```
-_Note :_ A reducer is a pure function. It only computes the next state. It should be completely predictable: calling it with the same inputs many times should produce the same outputs. It shouldn't perform any side effects like API calls or router transitions. These should happen before an action is dispatched.
+A Todo can have its own state.
+Each Todo has following properties:
+    1.  ID      - integer
+    2.  Text    - string
+    3.  Completed   - boolean
+Since, there can be multiple Todos, let's move the state upper to TodoList.
 
 
-## Store
+Since, a list of Todo changes based on the completed factor, 
+we can use Filter component to filter the todo list.
 
-Store holds application state. 
-Allows access to its state by _getState()_.
-Allows state to be updated by _dispatch(action)_.
-Registers listeners for state update by _subscribe(listener)_.
-Handles unregistering of the listeners via the function returned by _subscribe(listener)_.
+A Filter type component has a following attribute
+    1. Visibility Type ; SHOW_ALL/ACTIVE/COMPLETE
 
-```
-    // It stores the complete state tree returned by the root reducer
-    let store = createStore(todoApp)
+Since there can be only one Filter at a time, let's put the state to the Filter type component.
+
+So there are  two _states_ of the todo app at a given time: 
+1.  A list of todos
+2.  Visibility Filter
+
+
+## Redux
+
+Working with mulitple states of different components can be tedious to handle.
+Because, changes made on the state/attributes of one Component may not reflect on another state/Component.
+
+Redux solves this problem, using the concept of one store. 
+
+### Store
+
+Redux Store holds the application state. It has the following state:
+1. A list of todos
+2. Visibilty Filter
+
+It is same as above, but on Redux, it is controlled by one an only Store.
+As a whole it has a form like:
+{
+    [
+        {
+            id: [number]
+            text: [string]
+            completed: [true/false]
+        }...
+    ]
+    visibilityFilter: [ SHOW_ALL / ACTIVE / COMPLETED ]
+}
+
+Store can be updated by dispatch() functions.
+dispatch() takes an action as an argument.
+
+### Action
+Action is a simple JS object. 
+Action must have a _type_ parameter,  along with extra payload to update the state.
+
+In our TodoApp, we define three actions:
+1. Add Todo
+2. Toggle Todo
+3. Set Visibility Filter
+
+### Reducer
+Reducer functions updates the state of the app based on the action specified.
+It takes two params, _state_ & _action_
+Since, our application state has two core elements, _todo list_ and _filter_,
+we use two reducer functions:
+
+1.  todos(state=[],action)
+    - Since, the _state_ passed can have additional nested elements, we can work on individual state elements using switch() function based on the action specified.
+
+2.  filter(state='SHOW_ALL',action)
+
+We pass default state values incase the state is not defined.
+Since each reducer works on its own state element, we pass only the part of that state.
+So that, each reducer is isolated of the behaviour of others, and can't modify other state elements.
+
+### Components
+The components of our Todo app can be divided into Presentable and Container componenets:
+
+#### Presentable Components 
+They are basically the dumb components that provides the UI for the application.
+We have following Pres. components:
+1. __App__   - A root component
+2. __TodoList__ - A parent component that displays a list of Todos
+3. __Todo__  - Displays an individual Todo
+4. __Footer__    - A parent component that holds a list of FilterLink
+5. __Link__  - Displays an individual Filter option
+
+#### Container Components
+They are basically the smart components where all the business logics are processed.
+Container components can be used to provide necessary props for __state changes__ and handle __dispatch actions__ to the wrapping _Presentable Components_.  
+
+A container basically has two helper functions:  
+-   mapStateToProps
+    - provides props to the wrapped component based on the _Application State_
+- mapDispatchToProps
+    - provides dispatch callbacks as props to the wrapped component
+  
+We have follwing Container components:
+1. __VisibleTodo__   
+    -   Provides the _visible Todos_ based on the type of __Visibility Filter__
+    -   Provides _dispatch_ callbacks for __onToggle action__ of each todo's
+    -   Provides props to __TodoList__ component
+  
+2. __FilterLink__
+    -   It is called within the Footer component.
+    -   A __filter__ prop along with additional __children__ html elements are passed to it by Footer.
+    -   So, we can access the props by adding a second param __own props__ in our helper functions.
+    -   Provides __active__ that checks if the ___filter__ provided is same as state's __visibility filter__.
+    -   Provides _dispatch_ callbacks for __Filter Link__ clicked.
+    -   Provides props to __Link__ component
+
+3. __Add Todo__
+    - Has both functional and dump parts
+    - Handles callback to __add Todo__
     
-    // Every time state changes log it
-    const unsubscribe = store.subscribe(() => (
-        console.log(store.getState())
-    ))
-
-    // On every dispatch, the listeners will be called.
-    store.dispatch(addTodo("Build app"))
-```
-
-
-## Presentational and Container Component
-
-|                | Presentational Components        | Container Components                          |
-|----------------|----------------------------------|-----------------------------------------------|
-| Purpose 	     | How things look (markup, styles) | How things work (data fetching, state updates)|
-| Aware of Redux | No                               | Yes                                           |
-| To read data 	 | Read data from props 	        | Subscribe to Redux state                      | 
-| To change data | Invoke callbacks from props      | Dispatch Redux actions                        |
-| Are written 	 | By hand 	                        | Usually generated by React Redux              |
-
-
-### Designing Presentational Components
-From https://reactjs.org/docs/thinking-in-react.html
-
-1.  Break the UI into a component heirarchy 
-2.  Each component must be atomic. It must be used for the specific task.
-3.  Build the static version of the App. (Use props to pass data using Top-to-Down Approach)
-4.  Identify the minimal (but complete) representation of the state.
-    -   If it is passed from Parent via props, it probably isn't state.
-    -   If it remains unchanged over time, it probably isn't state.
-    -   If you can compute it based on other state or props, it probably isn't state.
-5.  Identify where your state must live in.
-    -   Identify every components that renders something based on that state.
-    -   Find a common owner that might need similar state.
-    -   Either the common owner or another component higher up in the hierarchy should own the state.
-    -   If you can't find the component which makes sense to own the component,
-        create a new component simply for holding the component,
-        and add it somewhere in the hierarchy above the common owner component.
-6.  Add the Inverse Data Flow.
-    -   Pass callbacks thorough the hierarchy, that would fire when the state should change.
-
-
-Here is the UI components for the Todo App:
--   TodoList is a list showing visible todos.
-    -   todos: Array is an array of todo items with { id, text, completed } shape.
-        onTodoClick(id: number) is a callback to invoke when a todo is clicked.
--   Todo is a single todo item.
-    -   text: string is the text to show.
-    -   completed: boolean is whether todo should appear crossed out.
-    -   onClick() is a callback to invoke when a todo is clicked.
--   Link is a link with a callback.
-    -   onClick() is a callback to invoke when link is clicked.
--   Footer is where we let the user change currently visible todos.
--   App is the root component that renders everything else.
-
-## Designing Container Components
-Container Components acts as bridge between Presentational components and Redux Store.
-It provides the necessary props including callbacks (for dispatch actions) to Presentational Components to work.
-Technically, we could use _store.subscribe()_ to read a part of the Redux state tree and supply props to a presentational component it renders. 
-But, we also have Redux library's connect() function, which provides many useful optimizations to prevent unnecessary re-renders. 
-
-To use connect(), we need to define two functions:
-__mapStateToProps()__ and __mapDispatchToProps()__.
-
-_mapStateToProps()_ maps tells how to transfrom current Redux store into props you want to pass to the
-Presentational component you are wrapping.  
-If this argument is specified in the Connect function, the new component will subscribe to Redux store updates. This means that any time the store is updated, mapStateToProps will be called. The results of mapStateToProps must be a plain object, which will be merged into the component’s props. If you don't want to subscribe to store updates, pass null or undefined in place of mapStateToProps.
-
-_mapDispatchToProps()_
-If your mapDispatchToProps function is declared as taking two parameters, it will be called with dispatch as the first parameter and the props passed to the connected component as the second parameter, and will be re-invoked whenever the connected component receives new props. (The second parameter is normally referred to as ownProps by convention.)
-
--   Inject just dispatch and don't listen to store
-```
-    export default connect()(TodoApp)
-```
-For more examples:
-https://github.com/reactjs/react-redux/blob/master/docs/api.md#examples
-
-## Implementing other components
-
-Sometimes, we don't need to separate a component into Presentational and Conatainer components.
-As such, both the UI and functionalities can be added to a single component.
-
-In the todo app, 
-AddTodo component has a _input_ and a _button_ UI component.
-On button click, it _dispatches an action that adds a Todo element in the store_.
+#### The process as a whole
+A component may have a _callback_ to update the store/state of the app.
+When the _dispatch_ callback is executed, a _reducer_ is called based on the action specified.
+The _reducer_ then returns the updated state to the store.
+Since we are using _container components_ to pass the _dispatch_ actions to the UI component, 
+the underlying _UI component_ wrapped by the _container component_ is re-rendered.
