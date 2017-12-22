@@ -48,7 +48,7 @@ Redux Store holds the application state. It has the following state:
 It is same as above, but on Redux, it is controlled by one an only Store.
 As a whole it has a form like:
 {
-    [
+    todos: [
         {
             id: [number]
             text: [string]
@@ -79,11 +79,21 @@ we use two reducer functions:
 1.  todos(state=[],action)
     - Since, the _state_ passed can have additional nested elements, we can work on individual state elements using switch() function based on the action specified.
 
-2.  filter(state='SHOW_ALL',action)
+2.  visibilityFilter(state='SHOW_ALL',action)
 
 We pass default state values incase the state is not defined.
 Since each reducer works on its own state element, we pass only the part of that state.
-So that, each reducer is isolated of the behaviour of others, and can't modify other state elements.
+Hence, each reducer is isolated of the behaviour of others, and can't modify other state elements.
+Reducers are combined into using library function:
+```
+    combineReducers(
+        {
+            todos,
+            visibilityFilter
+        }
+    )
+```
+Here, combineReducers is a wrapper around reducers that return a full _state_ of the app as a JS object and then passed to the _Store_.
 
 ### Components
 The components of our Todo app can be divided into Presentable and Container componenets:
